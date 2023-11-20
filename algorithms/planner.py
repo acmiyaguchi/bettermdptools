@@ -23,6 +23,7 @@ for iterating to an optimal policy and reward value for a given MDP.
 import numpy as np
 import warnings
 from utils.decorators import print_runtime
+import tqdm
 
 
 class Planner:
@@ -61,7 +62,9 @@ class Planner:
         V_track = np.zeros((n_iters, len(self.P)), dtype=np.float64)
         i = 0
         converged = False
-        while i < n_iters-1 and not converged:
+        bar = tqdm.tqdm(total=n_iters, desc="Value Iteration")
+        while i < n_iters - 1 and not converged:
+            bar.update(1)
             i += 1
             Q = np.zeros((len(self.P), len(self.P[0])), dtype=np.float64)
             for s in range(len(self.P)):
@@ -73,9 +76,11 @@ class Planner:
             V = np.max(Q, axis=1)
             V_track[i] = V
         if not converged:
-            warnings.warn("Max iterations reached before convergence.  Check theta and n_iters.  ")
+            warnings.warn(
+                "Max iterations reached before convergence.  Check theta and n_iters.  "
+            )
 
-        pi = {s:a for s, a in enumerate(np.argmax(Q, axis=1))}
+        pi = {s: a for s, a in enumerate(np.argmax(Q, axis=1))}
         return V, V_track, pi
 
     @print_runtime
@@ -114,7 +119,9 @@ class Planner:
         V_track = np.zeros((n_iters, len(self.P)), dtype=np.float64)
         i = 0
         converged = False
-        while i < n_iters-1 and not converged:
+        bar = tqdm.tqdm(total=n_iters, desc="Policy Iteration")
+        while i < n_iters - 1 and not converged:
+            bar.update(1)
             i += 1
             old_pi = pi
             V = self.policy_evaluation(pi, V, gamma, theta)
