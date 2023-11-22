@@ -133,15 +133,20 @@ class Planner:
             warnings.warn("Max iterations reached before convergence.  Check n_iters.")
         return V, V_track, pi
 
-    def policy_evaluation(self, pi, prev_V, gamma=1.0, theta=1e-10):
-        while True:
+    def policy_evaluation(self, pi, prev_V, gamma=1.0, theta=1e-10, max_iters=1000):
+        for i in range(max_iters):
             V = np.zeros(len(self.P), dtype=np.float64)
             for s in range(len(self.P)):
                 for prob, next_state, reward, done in self.P[s][pi[s]]:
                     V[s] += prob * (reward + gamma * prev_V[next_state] * (not done))
-            if np.max(np.abs(prev_V - V)) < theta:
+            delta = np.max(np.abs(prev_V - V))
+            if delta < theta:
                 break
             prev_V = V.copy()
+        if i == max_iters - 1:
+            raise ValueError(
+                "Max iterations reached before convergence.  Check n_iters."
+            )
         return V
 
     def policy_improvement(self, V, gamma=1.0):
